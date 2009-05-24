@@ -1,0 +1,56 @@
+h1. Versioned Objects
+
+Versioned objects is a trivial Common Lisp library that allows you to make snapshots of objects.
+
+This system allows you to have several versions of your objects around.  It helps you to
+
+* register snapshots
+* choose the slots which should have a snapshot
+* see if stuff has changed since a registered snapshot
+* restore registered snapshots of your object.
+* inspect the values of the slots in a previous snapshot
+
+it is built on top of closer-mop
+
+h1. The basic howto
+
+This howto is far from complete.  I'll try to complete this one day, expect it to take some time though.
+
+First, let's create a snapshotable object:
+
+  (use-package :versioned-objects)
+  (defclass my-class (versioned-object)
+    ((a :initarg :a
+        :accessor a-value)
+     (b :initarg :b
+        :accessor b-value)))
+
+Now we can make an instance of this class:
+
+  (defvar *my-object* (make-instance 'my-class :a 10 :b 100))
+  ;; init is set automatically
+  (changed-p *my-object* :init)
+  (incf (a-value *my-object*))
+  (changed-p *my-object* :init)
+  ;; let's make a snapshot of this new state
+  (snapshot *my-object* 'my-first-snapshot)
+  (changed-p *my-object* 'my-first-snapshot)
+  ;; how did the object look at the init state?
+  (snapshot-value *my-object* :init 'a)
+  (snapshot-value *my-object* :init 'b)
+  ;; let's remove the init snapshot and see if it still exists
+  (snapshot-p *my-object* 'my-first-snapshot)
+  (rm-snapshot *my-object* 'my-first-snapshot)
+  (snapshot-p *my-object* 'my-first-snapshot)
+  ;; now that that's gone, let's do some more updating
+  (incf (b-value *my-object*))
+  (setf (a-value *my-object*) 1000)
+  ;; perhaps this wasn't such a briliant idea, we should restore the init state,
+  ;; in order to get our object back in a sweet state
+  (a-value *my-object*)
+  (b-value *my-object*)
+  (restore-snaphot *my-object* :init)
+  (a-value *my-object*)
+  (b-value *my-object*)
+
+That's it! This describes the basic interface to the object system.  It's quite straight-forward.  Expect some slight extensions to this interface in the future.
