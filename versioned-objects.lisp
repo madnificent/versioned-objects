@@ -1,6 +1,7 @@
 (defpackage :versioned-objects
   (:use :common-lisp
 	:closer-mop)
+  (:shadowing-import-from :closer-mop :defmethod :standard-generic-function :defmethod :defgeneric :standard-generic-function)
   (:export :versioned-object
 	   :snapshot
 	   :rm-snapshot
